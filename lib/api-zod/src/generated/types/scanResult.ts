@@ -5,6 +5,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface ScanResult {
+  scanned: number;
+  newMentions: number;
+  newAlerts: number;
 }

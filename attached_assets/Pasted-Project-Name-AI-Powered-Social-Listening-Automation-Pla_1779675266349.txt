@@ -1,0 +1,173 @@
+Project Name:
+AI-Powered Social Listening & Automation Platform
+
+Project Overview:
+We are building a lean AI-powered social listening platform designed for small and medium-sized businesses (SMBs). The platform helps businesses monitor online conversations about their brand, products, competitors, and industry trends in real time.
+
+The goal is to provide an affordable and simple alternative to expensive enterprise social listening tools by focusing on automation, AI-generated insights, and fast setup.
+
+The platform will collect mentions from social platforms, analyze sentiment using AI, and send smart alerts and summaries to business owners.
+
+Target Customers:
+- Small businesses
+- E-commerce brands
+- SaaS startups
+- Agencies
+- Local businesses
+- Personal brands
+
+Core Problems We Solve:
+- Businesses miss customer complaints online
+- No centralized monitoring for brand mentions
+- Slow response to negative feedback
+- No visibility into competitor conversations
+- Manual social monitoring takes too much time
+
+Lean MVP Goal:
+The MVP should focus on validating demand as quickly as possible with the smallest useful feature set.
+
+We are NOT building a full enterprise platform initially.
+
+The MVP should only include:
+1. Reddit mention monitoring
+2. Keyword/brand tracking
+3. AI sentiment analysis
+4. Smart alerts
+5. Daily AI summaries dashboard
+
+Core MVP Features:
+
+1. Social Monitoring
+- Monitor Reddit posts and comments
+- Track:
+  - Brand names
+  - Keywords
+  - Competitor names
+- Store mentions in the database
+
+2. AI Sentiment Analysis
+Use AI to classify mentions into:
+- Positive
+- Neutral
+- Negative
+
+Optional:
+- Urgency detection
+- Complaint detection
+
+3. Smart Alerts
+Send alerts when:
+- Negative mentions appear
+- High engagement mentions detected
+- Competitor mentions spike
+
+Alert channels:
+- Slack
+- Email
+
+4. AI Daily Summaries
+Generate daily AI summaries containing:
+- Top mentions
+- Main complaints
+- Trending discussions
+- Overall sentiment overview
+
+5. Dashboard
+Simple dashboard with:
+- Mentions feed
+- Sentiment statistics
+- Recent alerts
+- AI summaries
+
+Technical Stack:
+
+Frontend:
+- React.js
+- TailwindCSS
+
+Backend:
+- FastAPI (Python)
+
+Database:
+- Supabase (PostgreSQL)
+
+AI Layer:
+- OpenAI API
+
+Automation:
+- n8n
+
+Social Data Collection:
+- Apify
+- Reddit API
+
+Queue / Background Jobs:
+- Redis
+
+Deployment:
+- Railway
+
+Email Notifications:
+- Resend
+
+Architecture Flow:
+
+Apify / Reddit API
+        ↓
+FastAPI Backend
+        ↓
+Redis Queue
+        ↓
+OpenAI Processing
+        ↓
+Supabase Database
+        ↓
+React Dashboard
+        ↓
+n8n Automations
+        ↓
+Slack / Email Alerts
+
+Development Priorities:
+
+Phase 1:
+- Project setup
+- Database schema
+- Reddit ingestion pipeline
+- Mention storage
+
+Phase 2:
+- AI sentiment analysis
+- Mention classification
+- AI summaries generation
+
+Phase 3:
+- Dashboard UI
+- Alerts system
+- Slack/email integration
+
+Important Development Notes:
+- Build fast and lean
+- Avoid overengineering
+- Use managed services whenever possible
+- Reuse existing tools instead of building infrastructure
+- Focus on validating customer demand quickly
+- Prioritize usability and automation over complex analytics
+
+What We Are NOT Building Initially:
+- Multi-platform social integrations
+- Complex ML pipelines
+- Custom workflow builders
+- Enterprise analytics
+- White-label support
+- Advanced team permissions
+- Custom AI model training
+
+Primary MVP Objective:
+Launch quickly with a functional product that can:
+- Monitor Reddit mentions
+- Analyze sentiment
+- Send alerts
+- Generate AI summaries
+
+The objective is to get early users and validate the market before expanding features.
