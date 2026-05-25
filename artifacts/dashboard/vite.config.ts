@@ -4,36 +4,26 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-const rawPort = process.env.PORT;
+const isReplit = process.env.REPL_ID !== undefined;
 
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
-
+// Locally: PORT defaults to 5173, BASE_PATH defaults to "/".
+// In Replit workflows, both are injected by the platform.
+const rawPort = process.env.PORT ?? "5173";
 const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH;
-
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
-}
+const basePath = process.env.BASE_PATH ?? "/";
 
 export default defineConfig({
   base: basePath,
   plugins: [
     react(),
     tailwindcss(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
+    ...(process.env.NODE_ENV !== "production" ? [runtimeErrorOverlay()] : []),
+    ...(process.env.NODE_ENV !== "production" && isReplit
       ? [
           await import("@replit/vite-plugin-cartographer").then((m) =>
             m.cartographer({
@@ -49,7 +39,12 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
-      "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+      "@assets": path.resolve(
+        import.meta.dirname,
+        "..",
+        "..",
+        "attached_assets",
+      ),
     },
     dedupe: ["react", "react-dom"],
   },
@@ -63,6 +58,16 @@ export default defineConfig({
     strictPort: true,
     host: "0.0.0.0",
     allowedHosts: true,
+    // In Replit the shared proxy routes /api directly to the API server.
+    // Locally, proxy /api from the Vite dev server to the FastAPI backend.
+    proxy: isReplit
+      ? {}
+      : {
+          "/api": {
+            target: `http://localhost:${process.env.API_PORT ?? "8080"}`,
+            changeOrigin: true,
+          },
+        },
     fs: {
       strict: true,
     },
