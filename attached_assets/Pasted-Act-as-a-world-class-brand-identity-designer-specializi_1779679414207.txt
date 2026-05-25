@@ -1,0 +1,94 @@
+Act as a world-class brand identity designer specializing in premium AI SaaS companies.
+Your task is to define a complete visual identity system for a product called AuraFlow, an AI-powered social listening and brand intelligence platform that monitors online conversations, brand perception, and competitor signals in real time (24/7).
+
+The product is already built. Focus ONLY on brand image, visual identity, color system, typography direction, and emotional theme — not UI layout or features.
+
+🧠 Brand Essence
+
+AuraFlow represents:
+
+Continuous awareness of digital conversations
+Silent AI intelligence observing the internet
+Real-time perception of brand reputation
+A calm but powerful “watching system” for global signals
+
+The brand should feel like a fusion of:
+
+Nordic minimalism (calm, dark, structured, intelligent)
+Intelligence/security systems (observatory-level awareness)
+High-end AI infrastructure (Palantir / Datadog-level seriousness)
+
+It must feel: silent, omnipresent, precise, and inevitable.
+
+🎨 Color System
+
+Define a full palette with strict hierarchy:
+
+Primary background: deep Nordic black / charcoal (#0B0F14 style range)
+Secondary background: layered dark gray with subtle gradient depth
+Primary accent: icy cyan / electric blue (used sparingly for signals and intelligence highlights)
+Secondary accent: muted teal or cold blue-gray tones
+Data visualization colors: soft glow tones, low saturation, high clarity
+Text colors: off-white, soft gray (avoid pure white for main text)
+
+The overall palette must feel cold, controlled, and high-precision, not colorful or playful.
+
+✍️ Typography Direction
+Primary font style: modern grotesk sans-serif (Inter / Neue Haas Grotesk / SF Pro style)
+Tone: clean, neutral, highly readable
+Hierarchy: strong contrast between headings and body
+Spacing: wide letter spacing for headings, calm density for body text
+No decorative fonts
+
+The typography should communicate trust, intelligence, and clarity under pressure.
+
+🧩 Visual Language
+
+Define the brand’s visual motifs:
+
+Abstract signal waves representing online conversations
+Floating nodes representing mentions and data points
+Soft glowing lines representing flow of information
+Subtle grid systems inspired by intelligence dashboards
+“Invisible system watching everything” aesthetic
+
+Avoid:
+
+Cyberpunk chaos
+Overly futuristic neon overload
+Cartoonish or playful visuals
+
+The visuals should feel like a silent observatory of global digital activity.
+
+🌌 Photography / Imagery Style
+Abstract AI-generated intelligence environments
+Dark environments with subtle light sources
+Minimal human presence (or none at all)
+Emphasis on data, light, reflection, depth, and silence
+Futuristic but realistic (not sci-fi fantasy)
+
+Mood keywords:
+quiet, observant, controlled, analytical, omnipresent, secure
+
+🧠 Emotional Brand Feeling
+
+The brand should make users feel:
+
+“My brand is always being watched and protected”
+“I can see what others miss”
+“I have control over perception and reputation”
+
+It should feel like a strategic intelligence advantage, not just a tool.
+
+⚡ Final Output Requirement
+
+Produce a structured brand identity guide including:
+
+Color palette (with hex suggestions)
+Typography system
+Visual motif system
+Image/photography style direction
+Emotional tone summary
+Overall brand archetype
+
+The result must feel like a high-end AI intelligence brand, not a typical SaaS product.

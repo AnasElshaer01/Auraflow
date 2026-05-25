@@ -8,10 +8,10 @@ import {
   SidebarMenuItem,
   SidebarInset,
   SidebarTrigger,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, MessageSquare, Tag, Bell, FileText } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Tag, Bell, FileText, Radio } from "lucide-react";
 import { useListAlerts } from "@workspace/api-client-react";
-import { Badge } from "@/components/ui/badge";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -21,42 +21,84 @@ const navItems = [
   { href: "/summaries", label: "AI Summaries", icon: FileText },
 ];
 
+function SignalDot() {
+  return (
+    <span className="relative flex h-1.5 w-1.5">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
+      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+    </span>
+  );
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { data: alerts } = useListAlerts({ unreadOnly: true });
+  const { data: alerts } = useListAlerts({ limit: 100, unreadOnly: true });
   const unreadCount = Array.isArray(alerts) ? alerts.length : 0;
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <Sidebar className="border-r border-sidebar-border">
-        <SidebarHeader className="px-4 py-5 border-b border-sidebar-border">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground text-xs font-bold">L</span>
+      <Sidebar className="border-r border-sidebar-border bg-sidebar">
+        {/* Brand header */}
+        <SidebarHeader className="px-5 py-5 border-b border-sidebar-border">
+          <div className="flex items-center gap-3">
+            {/* AuraFlow logo mark — signal node motif */}
+            <div className="relative w-8 h-8 shrink-0">
+              <div className="absolute inset-0 rounded-sm bg-primary/10 border border-primary/30" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <circle cx="9" cy="9" r="2" fill="hsl(var(--primary))" />
+                  <circle cx="9" cy="9" r="4.5" stroke="hsl(var(--primary))" strokeWidth="0.75" strokeOpacity="0.5" />
+                  <circle cx="9" cy="9" r="7" stroke="hsl(var(--primary))" strokeWidth="0.5" strokeOpacity="0.25" />
+                  <line x1="9" y1="2" x2="9" y2="4" stroke="hsl(var(--primary))" strokeWidth="1" strokeOpacity="0.6" />
+                  <line x1="16" y1="9" x2="14" y2="9" stroke="hsl(var(--primary))" strokeWidth="1" strokeOpacity="0.6" />
+                  <line x1="9" y1="16" x2="9" y2="14" stroke="hsl(var(--primary))" strokeWidth="1" strokeOpacity="0.6" />
+                  <line x1="2" y1="9" x2="4" y2="9" stroke="hsl(var(--primary))" strokeWidth="1" strokeOpacity="0.6" />
+                </svg>
+              </div>
             </div>
             <div>
-              <p className="text-sm font-semibold text-sidebar-foreground">ListenAI</p>
-              <p className="text-[10px] text-muted-foreground tracking-wide uppercase">Social Intelligence</p>
+              <p className="text-[13px] font-semibold tracking-[0.08em] uppercase text-sidebar-foreground">
+                AuraFlow
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <SignalDot />
+                <p className="text-[9px] text-primary/70 tracking-[0.14em] uppercase font-medium">
+                  Monitoring active
+                </p>
+              </div>
             </div>
           </div>
         </SidebarHeader>
-        <SidebarContent className="py-3 px-2">
-          <SidebarMenu>
+
+        {/* Navigation */}
+        <SidebarContent className="py-4 px-2">
+          <div className="px-3 mb-2">
+            <p className="text-[9px] font-semibold tracking-[0.16em] uppercase text-muted-foreground/50">
+              Intelligence
+            </p>
+          </div>
+          <SidebarMenu className="gap-0.5">
             {navItems.map(({ href, label, icon: Icon }) => {
               const isActive = href === "/" ? location === "/" : location.startsWith(href);
               return (
                 <SidebarMenuItem key={href}>
                   <SidebarMenuButton asChild isActive={isActive}>
-                    <Link href={href} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                      <Icon className="w-4 h-4 shrink-0" />
+                    <Link
+                      href={href}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-sm text-[12px] font-medium tracking-wide transition-all ${
+                        isActive
+                          ? "text-primary bg-primary/8 border border-primary/20"
+                          : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent border border-transparent"
+                      }`}
+                    >
+                      <Icon
+                        className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground/60"}`}
+                      />
                       <span>{label}</span>
                       {label === "Alerts" && unreadCount > 0 && (
-                        <Badge
-                          data-testid="badge-unread-alerts"
-                          className="ml-auto text-[10px] px-1.5 py-0 h-4 min-w-[16px] flex items-center justify-center bg-destructive text-destructive-foreground"
-                        >
+                        <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-sm bg-primary/15 text-primary border border-primary/25 tracking-wide">
                           {unreadCount}
-                        </Badge>
+                        </span>
                       )}
                     </Link>
                   </SidebarMenuButton>
@@ -65,15 +107,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
             })}
           </SidebarMenu>
         </SidebarContent>
+
+        {/* Footer */}
+        <SidebarFooter className="border-t border-sidebar-border px-5 py-4">
+          <div className="flex items-center gap-2">
+            <Radio className="w-3 h-3 text-primary/60" />
+            <span className="text-[9px] text-muted-foreground/40 tracking-[0.12em] uppercase">
+              Reddit · 24/7 scan
+            </span>
+          </div>
+        </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="flex-1 flex flex-col min-w-0">
-        <header className="flex h-12 items-center gap-3 border-b border-border px-4 shrink-0">
-          <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-          <div className="h-4 w-px bg-border" />
-          <span className="text-xs text-muted-foreground font-medium tracking-wide uppercase">
-            {navItems.find((n) => (n.href === "/" ? location === "/" : location.startsWith(n.href)))?.label ?? "ListenAI"}
-          </span>
+
+      <SidebarInset className="flex-1 flex flex-col min-w-0 intelligence-grid">
+        {/* Topbar */}
+        <header className="flex h-11 items-center gap-3 border-b border-border/60 px-4 shrink-0 bg-background/80 backdrop-blur-sm">
+          <SidebarTrigger className="text-muted-foreground/50 hover:text-muted-foreground w-7 h-7" />
+          <div className="h-3.5 w-px bg-border/60" />
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground/50 font-medium tracking-[0.14em] uppercase">
+              {navItems.find((n) =>
+                n.href === "/" ? location === "/" : location.startsWith(n.href)
+              )?.label ?? "AuraFlow"}
+            </span>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <SignalDot />
+            <span className="text-[9px] text-muted-foreground/40 tracking-wider uppercase">Live</span>
+          </div>
         </header>
+
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </SidebarInset>
     </div>
