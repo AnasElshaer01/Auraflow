@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import NotFound from "@/pages/not-found";
+import Landing from "@/pages/landing";
 import { Layout } from "@/components/layout";
 import Dashboard from "@/pages/dashboard";
 import Mentions from "@/pages/mentions";
@@ -17,34 +18,35 @@ function Router() {
   return (
     <Switch>
       <Route path="/">
+        <Landing />
+      </Route>
+      <Route path="/app">
         <Layout>
           <Dashboard />
         </Layout>
       </Route>
-      <Route path="/mentions">
+      <Route path="/app/mentions">
         <Layout>
           <Mentions />
         </Layout>
       </Route>
-      <Route path="/keywords">
+      <Route path="/app/keywords">
         <Layout>
           <Keywords />
         </Layout>
       </Route>
-      <Route path="/alerts">
+      <Route path="/app/alerts">
         <Layout>
           <Alerts />
         </Layout>
       </Route>
-      <Route path="/summaries">
+      <Route path="/app/summaries">
         <Layout>
           <Summaries />
         </Layout>
       </Route>
       <Route>
-        <Layout>
-          <NotFound />
-        </Layout>
+        <NotFound />
       </Route>
     </Switch>
   );

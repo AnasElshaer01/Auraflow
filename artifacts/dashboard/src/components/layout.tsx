@@ -14,11 +14,11 @@ import { LayoutDashboard, MessageSquare, Tag, Bell, FileText, Radio } from "luci
 import { useListAlerts } from "@workspace/api-client-react";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/mentions", label: "Mentions", icon: MessageSquare },
-  { href: "/keywords", label: "Keywords", icon: Tag },
-  { href: "/alerts", label: "Alerts", icon: Bell },
-  { href: "/summaries", label: "AI Summaries", icon: FileText },
+  { href: "/app", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/app/mentions", label: "Mentions", icon: MessageSquare },
+  { href: "/app/keywords", label: "Keywords", icon: Tag },
+  { href: "/app/alerts", label: "Alerts", icon: Bell },
+  { href: "/app/summaries", label: "AI Summaries", icon: FileText },
 ];
 
 function SignalDot() {
@@ -38,10 +38,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen w-full bg-background">
       <Sidebar className="border-r border-sidebar-border bg-sidebar">
-        {/* Brand header */}
         <SidebarHeader className="px-5 py-5 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            {/* AuraFlow logo mark — signal node motif */}
             <div className="relative w-8 h-8 shrink-0">
               <div className="absolute inset-0 rounded-sm bg-primary/10 border border-primary/30" />
               <div className="absolute inset-0 flex items-center justify-center">
@@ -70,7 +68,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </SidebarHeader>
 
-        {/* Navigation */}
         <SidebarContent className="py-4 px-2">
           <div className="px-3 mb-2">
             <p className="text-[9px] font-semibold tracking-[0.16em] uppercase text-muted-foreground/50">
@@ -79,7 +76,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <SidebarMenu className="gap-0.5">
             {navItems.map(({ href, label, icon: Icon }) => {
-              const isActive = href === "/" ? location === "/" : location.startsWith(href);
+              const isActive = href === "/app" ? location === "/app" : location.startsWith(href);
               return (
                 <SidebarMenuItem key={href}>
                   <SidebarMenuButton asChild isActive={isActive}>
@@ -91,9 +88,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent border border-transparent"
                       }`}
                     >
-                      <Icon
-                        className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground/60"}`}
-                      />
+                      <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground/60"}`} />
                       <span>{label}</span>
                       {label === "Alerts" && unreadCount > 0 && (
                         <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-sm bg-primary/15 text-primary border border-primary/25 tracking-wide">
@@ -108,7 +103,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </SidebarMenu>
         </SidebarContent>
 
-        {/* Footer */}
         <SidebarFooter className="border-t border-sidebar-border px-5 py-4">
           <div className="flex items-center gap-2">
             <Radio className="w-3 h-3 text-primary/60" />
@@ -120,23 +114,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       <SidebarInset className="flex-1 flex flex-col min-w-0 intelligence-grid">
-        {/* Topbar */}
         <header className="flex h-11 items-center gap-3 border-b border-border/60 px-4 shrink-0 bg-background/80 backdrop-blur-sm">
           <SidebarTrigger className="text-muted-foreground/50 hover:text-muted-foreground w-7 h-7" />
           <div className="h-3.5 w-px bg-border/60" />
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground/50 font-medium tracking-[0.14em] uppercase">
-              {navItems.find((n) =>
-                n.href === "/" ? location === "/" : location.startsWith(n.href)
-              )?.label ?? "AuraFlow"}
-            </span>
-          </div>
+          <span className="text-[10px] text-muted-foreground/50 font-medium tracking-[0.14em] uppercase">
+            {navItems.find((n) => (n.href === "/app" ? location === "/app" : location.startsWith(n.href)))?.label ?? "AuraFlow"}
+          </span>
           <div className="ml-auto flex items-center gap-2">
             <SignalDot />
             <span className="text-[9px] text-muted-foreground/40 tracking-wider uppercase">Live</span>
           </div>
         </header>
-
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </SidebarInset>
     </div>

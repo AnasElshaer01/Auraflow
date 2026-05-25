@@ -204,6 +204,21 @@
   animation: signal-pulse 2.4s ease-in-out infinite;
 }
 
+/* ── Slow orbit ring animations ──────────────────────────────────────────── */
+@keyframes orbit-cw {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes orbit-ccw {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+.orbit-40  { animation: orbit-cw  40s linear infinite; }
+.orbit-28  { animation: orbit-ccw 28s linear infinite; }
+.orbit-18  { animation: orbit-cw  18s linear infinite; }
+.orbit-12  { animation: orbit-ccw 12s linear infinite; }
+
 /* ── Subtle grid overlay for the main content area ───────────────────────── */
 .intelligence-grid {
   background-image:
