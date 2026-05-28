@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, AlertTriangle, MessageCircle } from "lucide-react";
+import { ArrowUpRight, AlertTriangle, MessageCircle, Triangle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 function SentimentBadge({ sentiment }: { sentiment: string }) {
@@ -25,6 +25,28 @@ function SentimentBadge({ sentiment }: { sentiment: string }) {
     <Badge className="bg-slate-800/80 text-slate-400 border border-slate-700/40 text-[9px] font-semibold tracking-wide uppercase shrink-0">
       Neutral
     </Badge>
+  );
+}
+
+function PlatformLabel({ platform, url }: { platform: string; url: string }) {
+  const isHN = platform === "hackernews";
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-0.5 text-[9px] text-muted-foreground/40 hover:text-primary transition-colors tracking-wide uppercase"
+    >
+      {isHN ? (
+        <>
+          <Triangle className="w-2 h-2 fill-orange-500/60 stroke-none" />
+          HN
+        </>
+      ) : (
+        <>Reddit</>
+      )}
+      <ArrowUpRight className="w-2.5 h-2.5" />
+    </a>
   );
 }
 
@@ -100,6 +122,9 @@ export default function Mentions() {
             <div className="flex flex-col items-center justify-center py-24 text-muted-foreground/40">
               <MessageCircle className="w-8 h-8 mb-3" />
               <p className="text-xs tracking-[0.1em] uppercase">No signals found</p>
+              <p className="text-[10px] mt-1 text-muted-foreground/30">
+                Use "Scan Now" in the dashboard to fetch live mentions
+              </p>
             </div>
           )
           : mentions.map((m) => (
@@ -118,12 +143,16 @@ export default function Mentions() {
                       </p>
                     )}
                     <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2">
-                      <span className="text-[10px] text-muted-foreground/40">by {m.author}</span>
+                      <span className="text-[10px] text-muted-foreground/40">
+                        by {m.author}
+                      </span>
                       {m.subreddit && (
-                        <span className="text-[10px] text-primary/70 font-medium">r/{m.subreddit}</span>
+                        <span className="text-[10px] text-primary/70 font-medium">
+                          r/{m.subreddit}
+                        </span>
                       )}
                       <span className="text-[10px] text-muted-foreground/40 tabular-nums">
-                        {m.upvotes} upvotes
+                        {m.upvotes} {m.platform === "hackernews" ? "pts" : "upvotes"}
                       </span>
                       <span className="text-[10px] text-muted-foreground/40">
                         {formatDistanceToNow(new Date(m.mentionedAt), { addSuffix: true })}
@@ -146,15 +175,7 @@ export default function Mentions() {
                   </div>
                   <div className="flex flex-col items-end gap-2 shrink-0">
                     <SentimentBadge sentiment={m.sentiment} />
-                    <a
-                      href={m.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      data-testid={`link-mention-${m.id}`}
-                      className="text-[9px] text-muted-foreground/40 hover:text-primary flex items-center gap-0.5 transition-colors tracking-wide uppercase"
-                    >
-                      Reddit <ArrowUpRight className="w-2.5 h-2.5" />
-                    </a>
+                    <PlatformLabel platform={m.platform ?? "hackernews"} url={m.url} />
                   </div>
                 </div>
               </CardContent>
