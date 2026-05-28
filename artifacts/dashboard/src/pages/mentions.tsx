@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, AlertTriangle, MessageCircle, Triangle } from "lucide-react";
+import { ArrowUpRight, AlertTriangle, MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 function SentimentBadge({ sentiment }: { sentiment: string }) {
@@ -28,8 +28,7 @@ function SentimentBadge({ sentiment }: { sentiment: string }) {
   );
 }
 
-function PlatformLabel({ platform, url }: { platform: string; url: string }) {
-  const isHN = platform === "hackernews";
+function RedditLink({ url }: { url: string }) {
   return (
     <a
       href={url}
@@ -37,15 +36,7 @@ function PlatformLabel({ platform, url }: { platform: string; url: string }) {
       rel="noopener noreferrer"
       className="flex items-center gap-0.5 text-[9px] text-muted-foreground/40 hover:text-primary transition-colors tracking-wide uppercase"
     >
-      {isHN ? (
-        <>
-          <Triangle className="w-2 h-2 fill-orange-500/60 stroke-none" />
-          HN
-        </>
-      ) : (
-        <>Reddit</>
-      )}
-      <ArrowUpRight className="w-2.5 h-2.5" />
+      Reddit <ArrowUpRight className="w-2.5 h-2.5" />
     </a>
   );
 }
@@ -152,7 +143,7 @@ export default function Mentions() {
                         </span>
                       )}
                       <span className="text-[10px] text-muted-foreground/40 tabular-nums">
-                        {m.upvotes} {m.platform === "hackernews" ? "pts" : "upvotes"}
+                        {m.upvotes} upvotes
                       </span>
                       <span className="text-[10px] text-muted-foreground/40">
                         {formatDistanceToNow(new Date(m.mentionedAt), { addSuffix: true })}
@@ -175,7 +166,7 @@ export default function Mentions() {
                   </div>
                   <div className="flex flex-col items-end gap-2 shrink-0">
                     <SentimentBadge sentiment={m.sentiment} />
-                    <PlatformLabel platform={m.platform ?? "hackernews"} url={m.url} />
+                    <RedditLink url={m.url} />
                   </div>
                 </div>
               </CardContent>

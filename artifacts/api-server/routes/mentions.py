@@ -6,7 +6,6 @@ from typing import Optional
 from database import get_db
 from models import Mention, MentionList, ScanResult
 import reddit_client
-import hn_client
 from sentiment import classify
 
 router = APIRouter()
@@ -62,40 +61,39 @@ def get_mention(id: int, db: Session = Depends(get_db)):
 @router.post("/mentions/scan", response_model=ScanResult)
 def trigger_scan(db: Session = Depends(get_db)):
     """
-    Scan for real mentions of every tracked keyword.
+    Scan Reddit for real mentions of every tracked keyword using PRAW.
 
-    Source priority:
-      1. Reddit via PRAW — used when REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET are set.
-      2. HackerNews Algolia API — automatic fallback when Reddit credentials are absent.
+    Requires REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET to be set in environment.
+    Returns a 503 with a clear message if credentials are missing.
 
     For each keyword:
-      - Fetches real posts from the active source
-      - Classifies sentiment from actual title + body text
-      - Inserts new mentions, skipping duplicates (deduped by external ID)
-      - Generates alerts for negative sentiment and high-engagement posts
+      - Searches r/all via PRAW with sort=new, time_filter=week
+      - Classifies sentiment from real post title + body text
+      - Inserts new mentions, skips duplicates (deduped by reddit_id)
+      - Generates alerts for negative sentiment, high engagement, competitor spikes
     """
-    keywords = db.execute(text("SELECT id, text, type FROM keywords")).fetchall()
+    if not reddit_client.is_configured():
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Reddit credentials not configured. "
+                "Set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET in Replit Secrets, "
+                "then restart the server."
+            ),
+        )
 
-    use_reddit  = reddit_client.is_configured()
-    source_name = "Reddit" if use_reddit else "HackerNews"
-    platform    = "reddit" if use_reddit else "hackernews"
-    print(f"[scan] Using source: {source_name}")
+    keywords = db.execute(text("SELECT id, text, type FROM keywords")).fetchall()
 
     total_new_mentions = 0
     total_new_alerts   = 0
     total_skipped      = 0
 
     for kw in keywords:
-        if use_reddit:
-            posts = reddit_client.search_posts(kw.text, limit=25, time_filter="week")
-        else:
-            posts = hn_client.search_stories(kw.text, limit=25, time_filter="pastWeek")
-
-        print(f"[scan] '{kw.text}' → {len(posts)} posts from {source_name}")
+        posts = reddit_client.search_posts(kw.text, limit=25, time_filter="week")
+        print(f"[scan] '{kw.text}' → {len(posts)} posts from Reddit")
 
         for post in posts:
-            external_id = post.get("reddit_id") or post.get("external_id")
-            if not external_id:
+            if not post.get("reddit_id"):
                 continue
 
             classified = classify(post["title"], post.get("body", "") or "")
@@ -106,9 +104,6 @@ def trigger_scan(db: Session = Depends(get_db)):
                 else datetime.now(timezone.utc)
             )
 
-            # subreddit is only meaningful for Reddit posts
-            subreddit = post.get("subreddit") if use_reddit else None
-
             row = db.execute(
                 text("""
                     INSERT INTO mentions
@@ -116,7 +111,7 @@ def trigger_scan(db: Session = Depends(get_db)):
                          sentiment, sentiment_score, upvotes, is_urgent, is_complaint,
                          mentioned_at, reddit_id)
                     VALUES
-                        (:keyword_id, :platform, :title, :body, :url, :author, :subreddit,
+                        (:keyword_id, 'reddit', :title, :body, :url, :author, :subreddit,
                          :sentiment, :sentiment_score, :upvotes, :is_urgent, :is_complaint,
                          :mentioned_at, :reddit_id)
                     ON CONFLICT (reddit_id) DO NOTHING
@@ -124,19 +119,18 @@ def trigger_scan(db: Session = Depends(get_db)):
                 """),
                 {
                     "keyword_id":      kw.id,
-                    "platform":        platform,
                     "title":           post["title"],
                     "body":            post["body"] or None,
                     "url":             post["url"],
                     "author":          post["author"],
-                    "subreddit":       subreddit,
+                    "subreddit":       post["subreddit"],
                     "sentiment":       classified["sentiment"],
                     "sentiment_score": classified["sentiment_score"],
                     "upvotes":         post["upvotes"],
                     "is_urgent":       classified["is_urgent"],
                     "is_complaint":    classified["is_complaint"],
                     "mentioned_at":    mentioned_at,
-                    "reddit_id":       external_id,
+                    "reddit_id":       post["reddit_id"],
                 },
             ).fetchone()
 
@@ -147,8 +141,7 @@ def trigger_scan(db: Session = Depends(get_db)):
             mention_id = row[0]
             total_new_mentions += 1
 
-            # ── Alert generation ────────────────────────────────────────────
-            source_label = f"r/{subreddit}" if subreddit else source_name
+            subreddit_label = f"r/{post['subreddit']}" if post.get("subreddit") else "Reddit"
 
             if classified["sentiment"] == "negative":
                 db.execute(
@@ -160,15 +153,14 @@ def trigger_scan(db: Session = Depends(get_db)):
                         "mid": mention_id,
                         "kid": kw.id,
                         "msg": (
-                            f"Negative mention of '{kw.text}' on {source_label}: "
-                            f"{post['title'][:80]}"
+                            f"Negative mention of '{kw.text}' in "
+                            f"{subreddit_label}: {post['title'][:80]}"
                         ),
                     },
                 )
                 total_new_alerts += 1
 
             if post["upvotes"] > 100:
-                pts_label = "upvotes" if use_reddit else "points"
                 db.execute(
                     text("""
                         INSERT INTO alerts (type, mention_id, keyword_id, message)
@@ -178,8 +170,8 @@ def trigger_scan(db: Session = Depends(get_db)):
                         "mid": mention_id,
                         "kid": kw.id,
                         "msg": (
-                            f"High-engagement post about '{kw.text}' on {source_label} "
-                            f"— {post['upvotes']} {pts_label}"
+                            f"High-engagement post about '{kw.text}' in "
+                            f"{subreddit_label} — {post['upvotes']} upvotes"
                         ),
                     },
                 )
@@ -195,8 +187,8 @@ def trigger_scan(db: Session = Depends(get_db)):
                         "mid": mention_id,
                         "kid": kw.id,
                         "msg": (
-                            f"Competitor '{kw.text}' trending on {source_label} "
-                            f"with {post['upvotes']} engagement"
+                            f"Competitor '{kw.text}' trending in "
+                            f"{subreddit_label} with {post['upvotes']} upvotes"
                         ),
                     },
                 )
