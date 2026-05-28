@@ -185,10 +185,22 @@ export default function Landing() {
 
           {/* ── Logo ── */}
           <Link href="/">
-            <div className="flex items-center gap-2.5 cursor-pointer shrink-0">
-              <img src={iconSrc} alt="" className="h-7 w-auto"
-                style={{ filter: "drop-shadow(0 0 8px rgba(7,211,232,0.35))" }} />
-              <span className="text-[15px] font-semibold text-foreground tracking-tight">FLOW</span>
+            <div className="flex items-center gap-3 cursor-pointer shrink-0 group">
+              <img src={iconSrc} alt="" className="h-8 w-auto transition-all duration-300 group-hover:scale-105"
+                style={{ filter: "drop-shadow(0 0 10px rgba(7,211,232,0.45))" }} />
+              {/* Hairline divider */}
+              <span className="h-5 w-px bg-primary/20 shrink-0" />
+              <span
+                className="text-[15px] font-bold tracking-[0.18em] uppercase transition-all duration-300 group-hover:tracking-[0.22em]"
+                style={{
+                  background: "linear-gradient(100deg, #07D3E8 0%, #a8f0f7 55%, #ffffff 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                FLOW
+              </span>
             </div>
           </Link>
 
