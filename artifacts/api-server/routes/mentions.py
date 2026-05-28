@@ -1,9 +1,13 @@
+import time
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import Optional
 from database import get_db
-from models import Mention, MentionList
+from models import Mention, MentionList, ScanResult
+from reddit_client import search_posts
+from sentiment import classify
 
 router = APIRouter()
 
@@ -17,7 +21,7 @@ def list_mentions(
     offset: int = Query(0),
     db: Session = Depends(get_db),
 ):
-    filters = []
+    filters: list[str] = []
     params: dict = {"limit": limit, "offset": offset}
 
     if keyword_id is not None:
@@ -37,7 +41,9 @@ def list_mentions(
         params,
     ).fetchall()
 
-    total_row = db.execute(text(f"SELECT COUNT(*) FROM mentions {where}"), params).fetchone()
+    total_row = db.execute(
+        text(f"SELECT COUNT(*) FROM mentions {where}"), params
+    ).fetchone()
     total = total_row[0] if total_row else 0
 
     return {"mentions": [dict(r._mapping) for r in rows], "total": total}
@@ -45,93 +51,152 @@ def list_mentions(
 
 @router.get("/mentions/{id}", response_model=Mention)
 def get_mention(id: int, db: Session = Depends(get_db)):
-    row = db.execute(text("SELECT * FROM mentions WHERE id = :id"), {"id": id}).fetchone()
+    row = db.execute(
+        text("SELECT * FROM mentions WHERE id = :id"), {"id": id}
+    ).fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="Mention not found")
     return dict(row._mapping)
 
 
-@router.post("/mentions/scan")
+@router.post("/mentions/scan", response_model=ScanResult)
 def trigger_scan(db: Session = Depends(get_db)):
-    """Simulate a Reddit scan: generates mock mentions for each tracked keyword."""
-    import random
-    from datetime import datetime, timezone
+    """
+    Scan Reddit for real mentions of every tracked keyword.
 
-    keywords = db.execute(text("SELECT * FROM keywords")).fetchall()
-    new_mentions = 0
-    new_alerts = 0
+    For each keyword:
+      1. Calls Reddit's public search API (no auth key required).
+      2. Classifies each post's sentiment from real title + body text.
+      3. Inserts new mentions — skips posts already stored (deduplicated by reddit_id).
+      4. Generates alerts for negative sentiment and high-engagement posts.
 
-    subreddits = ["entrepreneur", "smallbusiness", "startups", "marketing", "ecommerce", "saas"]
-    sentiments = ["positive", "neutral", "negative"]
-    sentiment_weights = [0.35, 0.40, 0.25]
+    Returns counts of scanned keywords, new mentions, new alerts, and skipped duplicates.
+    """
+    keywords = db.execute(text("SELECT id, text, type FROM keywords")).fetchall()
+
+    total_new_mentions = 0
+    total_new_alerts   = 0
+    total_skipped      = 0
 
     for kw in keywords:
-        count = random.randint(1, 4)
-        for _ in range(count):
-            sentiment = random.choices(sentiments, weights=sentiment_weights)[0]
-            upvotes = random.randint(0, 500)
-            is_urgent = sentiment == "negative" and random.random() < 0.4
-            is_complaint = sentiment == "negative" and random.random() < 0.6
-            subreddit = random.choice(subreddits)
-            score = round(random.uniform(-1.0, 1.0), 3)
+        posts = search_posts(kw.text, limit=25, time_filter="week")
+        print(f"[scan] '{kw.text}' → {len(posts)} posts from Reddit")
 
+        for post in posts:
+            if not post.get("reddit_id"):
+                continue
+
+            classified = classify(post["title"], post.get("body", "") or "")
+
+            mentioned_at = (
+                datetime.fromtimestamp(post["created_utc"], tz=timezone.utc)
+                if post.get("created_utc")
+                else datetime.now(timezone.utc)
+            )
+
+            # ON CONFLICT DO NOTHING — safe to re-scan without creating duplicates.
+            # PostgreSQL treats multiple NULLs as distinct, so old seed data
+            # (which has reddit_id = NULL) is unaffected.
             row = db.execute(
                 text("""
                     INSERT INTO mentions
                         (keyword_id, platform, title, body, url, author, subreddit,
-                         sentiment, sentiment_score, upvotes, is_urgent, is_complaint, mentioned_at)
+                         sentiment, sentiment_score, upvotes, is_urgent, is_complaint,
+                         mentioned_at, reddit_id)
                     VALUES
-                        (:keyword_id, 'reddit',
-                         :title, :body, :url, :author, :subreddit,
-                         :sentiment, :sentiment_score, :upvotes, :is_urgent, :is_complaint, :mentioned_at)
+                        (:keyword_id, 'reddit', :title, :body, :url, :author, :subreddit,
+                         :sentiment, :sentiment_score, :upvotes, :is_urgent, :is_complaint,
+                         :mentioned_at, :reddit_id)
+                    ON CONFLICT (reddit_id) DO NOTHING
                     RETURNING id
                 """),
                 {
-                    "keyword_id": kw.id,
-                    "title": f"Discussion about {kw.text} in r/{subreddit}",
-                    "body": f"People are talking about {kw.text}. {'This is a serious issue.' if is_complaint else 'Overall positive experience.'}",
-                    "url": f"https://reddit.com/r/{subreddit}/comments/{random.randint(100000,999999)}",
-                    "author": f"u/user_{random.randint(1000,9999)}",
-                    "subreddit": subreddit,
-                    "sentiment": sentiment,
-                    "sentiment_score": score,
-                    "upvotes": upvotes,
-                    "is_urgent": is_urgent,
-                    "is_complaint": is_complaint,
-                    "mentioned_at": datetime.now(timezone.utc),
+                    "keyword_id":      kw.id,
+                    "title":           post["title"],
+                    "body":            post["body"] or None,
+                    "url":             post["url"],
+                    "author":          post["author"],
+                    "subreddit":       post["subreddit"],
+                    "sentiment":       classified["sentiment"],
+                    "sentiment_score": classified["sentiment_score"],
+                    "upvotes":         post["upvotes"],
+                    "is_urgent":       classified["is_urgent"],
+                    "is_complaint":    classified["is_complaint"],
+                    "mentioned_at":    mentioned_at,
+                    "reddit_id":       post["reddit_id"],
                 },
             ).fetchone()
-            mention_id = row[0]
-            new_mentions += 1
 
-            # Auto-generate alerts
-            if sentiment == "negative":
+            if row is None:
+                # reddit_id already in DB — duplicate skipped
+                total_skipped += 1
+                continue
+
+            mention_id = row[0]
+            total_new_mentions += 1
+
+            # ── Alert generation ────────────────────────────────────────────
+            if classified["sentiment"] == "negative":
                 db.execute(
                     text("""
                         INSERT INTO alerts (type, mention_id, keyword_id, message)
-                        VALUES ('negative_mention', :mention_id, :keyword_id,
-                                :message)
+                        VALUES ('negative_mention', :mid, :kid, :msg)
                     """),
                     {
-                        "mention_id": mention_id,
-                        "keyword_id": kw.id,
-                        "message": f"Negative mention of '{kw.text}' detected on Reddit (r/{subreddit})",
+                        "mid": mention_id,
+                        "kid": kw.id,
+                        "msg": (
+                            f"Negative mention of '{kw.text}' in "
+                            f"r/{post['subreddit']}: {post['title'][:80]}"
+                        ),
                     },
                 )
-                new_alerts += 1
-            elif upvotes > 200:
+                total_new_alerts += 1
+
+            elif post["upvotes"] > 100:
                 db.execute(
                     text("""
                         INSERT INTO alerts (type, mention_id, keyword_id, message)
-                        VALUES ('high_engagement', :mention_id, :keyword_id, :message)
+                        VALUES ('high_engagement', :mid, :kid, :msg)
                     """),
                     {
-                        "mention_id": mention_id,
-                        "keyword_id": kw.id,
-                        "message": f"High-engagement mention of '{kw.text}' with {upvotes} upvotes",
+                        "mid": mention_id,
+                        "kid": kw.id,
+                        "msg": (
+                            f"High-engagement post about '{kw.text}' — "
+                            f"{post['upvotes']} upvotes in r/{post['subreddit']}"
+                        ),
                     },
                 )
-                new_alerts += 1
+                total_new_alerts += 1
+
+            # Competitor spike alert for competitor-type keywords with decent engagement
+            if kw.type == "competitor" and post["upvotes"] > 50:
+                db.execute(
+                    text("""
+                        INSERT INTO alerts (type, mention_id, keyword_id, message)
+                        VALUES ('competitor_spike', :mid, :kid, :msg)
+                    """),
+                    {
+                        "mid": mention_id,
+                        "kid": kw.id,
+                        "msg": (
+                            f"Competitor activity: '{kw.text}' mentioned with "
+                            f"{post['upvotes']} upvotes in r/{post['subreddit']}"
+                        ),
+                    },
+                )
+                total_new_alerts += 1
+
+        # Respect Reddit's rate limit — 2 s between keyword scans
+        if kw != keywords[-1]:
+            time.sleep(2)
 
     db.commit()
-    return {"scanned": len(keywords), "new_mentions": new_mentions, "new_alerts": new_alerts}
+
+    return {
+        "scanned":      len(keywords),
+        "new_mentions": total_new_mentions,
+        "new_alerts":   total_new_alerts,
+        "skipped":      total_skipped,
+    }

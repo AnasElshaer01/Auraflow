@@ -34,6 +34,7 @@ class MentionBase(BaseModel):
     is_urgent: bool = False
     is_complaint: bool = False
     mentioned_at: datetime
+    reddit_id: Optional[str] = None
 
 
 class MentionCreate(MentionBase):
@@ -98,6 +99,7 @@ class ScanResult(BaseModel):
     scanned: int
     new_mentions: int
     new_alerts: int
+    skipped: int = 0
 
 
 class DashboardStats(BaseModel):

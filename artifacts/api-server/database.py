@@ -50,8 +50,13 @@ def init_db():
                 is_urgent BOOLEAN NOT NULL DEFAULT FALSE,
                 is_complaint BOOLEAN NOT NULL DEFAULT FALSE,
                 mentioned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                reddit_id TEXT UNIQUE
             )
+        """))
+        # Migrate existing tables that don't have reddit_id yet
+        conn.execute(text("""
+            ALTER TABLE mentions ADD COLUMN IF NOT EXISTS reddit_id TEXT UNIQUE
         """))
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS alerts (
