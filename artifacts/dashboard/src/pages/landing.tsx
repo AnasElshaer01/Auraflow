@@ -2,9 +2,9 @@ import { Link } from "wouter";
 import { useGetDashboardStats } from "@workspace/api-client-react";
 import {
   MessageSquare, Bell, FileText, Tag, ArrowRight, Radio, Shield,
-  TrendingUp, Eye, Zap, ChevronRight, Activity, Globe,
+  TrendingUp, Eye, Zap, Activity, Globe,
 } from "lucide-react";
-import logoSrc from "@/assets/auraflow-logo.png";
+import logoSrc from "@/assets/auraflow-logo-transparent.png";
 
 function SignalRing() {
   return (
@@ -56,7 +56,7 @@ function SignalRing() {
 
 function StatCounter({ label, value, suffix = "" }: { label: string; value?: number | string; suffix?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-1 py-5 px-4">
+    <div className="flex flex-col items-center justify-center gap-1.5 py-5 px-4">
       <span className="text-xl sm:text-2xl font-semibold text-foreground tabular-nums">
         {value ?? "—"}{suffix}
       </span>
@@ -135,21 +135,34 @@ export default function Landing() {
     <div className="min-h-screen w-full bg-background text-foreground font-sans">
 
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-8 h-14 w-full">
-          <img
-            src={logoSrc}
-            alt="AuraFlow"
-            className="h-6 w-auto object-contain"
-          />
-          <div className="flex items-center gap-4 sm:gap-6">
-            <div className="hidden md:flex items-center gap-6 text-[11px] text-muted-foreground/60 font-medium tracking-wide uppercase">
-              <a href="#features" className="hover:text-primary transition-colors">Features</a>
-              <a href="#how" className="hover:text-primary transition-colors">How it works</a>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-lg"
+        style={{ borderBottom: "1px solid rgba(7,211,232,0.08)" }}
+      >
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-5 sm:px-10 h-16 w-full">
+
+          {/* Logo — full wordmark */}
+          <Link href="/">
+            <img
+              src={logoSrc}
+              alt="AuraFlow"
+              className="h-8 w-auto cursor-pointer"
+              style={{ filter: "drop-shadow(0 0 10px rgba(7,211,232,0.25))" }}
+            />
+          </Link>
+
+          {/* Right side: links + CTA */}
+          <div className="flex items-center gap-6 sm:gap-8">
+            <div className="hidden md:flex items-center gap-7">
+              <a href="#features" className="text-[12px] font-medium text-muted-foreground/55 hover:text-foreground transition-colors tracking-wide">Features</a>
+              <a href="#how" className="text-[12px] font-medium text-muted-foreground/55 hover:text-foreground transition-colors tracking-wide">How it works</a>
             </div>
             <Link href="/app">
-              <span className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-semibold tracking-[0.1em] uppercase px-3 sm:px-4 py-2 rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer whitespace-nowrap">
-                Enter Platform <ChevronRight className="w-3 h-3" />
+              <span
+                className="flex items-center gap-2 px-5 py-2.5 rounded-sm bg-primary text-primary-foreground text-[12px] font-semibold tracking-[0.06em] uppercase hover:bg-primary/90 transition-all cursor-pointer"
+                style={{ boxShadow: "0 0 20px rgba(7,211,232,0.3)" }}
+              >
+                Enter Platform
+                <ArrowRight className="w-3.5 h-3.5" />
               </span>
             </Link>
           </div>
@@ -164,7 +177,7 @@ export default function Landing() {
           style={{ background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(7,211,232,0.055) 0%, transparent 70%)" }}
         />
 
-        <div className="relative z-10 flex flex-col items-center text-center px-4 sm:px-6 max-w-5xl w-full mx-auto gap-6 sm:gap-8 pt-14">
+        <div className="relative z-10 flex flex-col items-center text-center px-4 sm:px-6 max-w-5xl w-full mx-auto gap-6 sm:gap-8 pt-16">
           {/* Status pill */}
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-primary/20 bg-primary/5 text-[10px] font-semibold tracking-[0.14em] uppercase text-primary">
             <span className="relative flex h-1.5 w-1.5">
@@ -190,7 +203,7 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <Link href="/app">
               <span
-                className="flex items-center justify-center gap-2.5 w-full sm:w-auto px-6 py-3 rounded-sm bg-primary text-primary-foreground text-sm font-semibold tracking-wide hover:bg-primary/90 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2.5 w-full sm:w-auto px-7 py-3 rounded-sm bg-primary text-primary-foreground text-sm font-semibold tracking-wide hover:bg-primary/90 transition-all cursor-pointer"
                 style={{ boxShadow: "0 0 28px rgba(7,211,232,0.22)" }}
               >
                 Open Intelligence Platform
@@ -198,7 +211,7 @@ export default function Landing() {
               </span>
             </Link>
             <a href="#features" className="w-full sm:w-auto">
-              <span className="flex items-center justify-center gap-2 px-6 py-3 rounded-sm border border-white/10 text-sm font-medium text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all tracking-wide cursor-pointer">
+              <span className="flex items-center justify-center gap-2 px-7 py-3 rounded-sm border border-white/10 text-sm font-medium text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all tracking-wide cursor-pointer">
                 Explore features
               </span>
             </a>
@@ -274,7 +287,6 @@ export default function Landing() {
             className="rounded-sm border border-white/8 overflow-hidden bg-card/40"
             style={{ boxShadow: "0 0 80px rgba(7,211,232,0.04)" }}
           >
-            {/* Browser chrome */}
             <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/6 bg-background/60">
               <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
               <div className="w-2.5 h-2.5 rounded-full bg-amber-500/40" />
@@ -289,7 +301,6 @@ export default function Landing() {
                 <span className="text-[9px] text-primary/50 tracking-wider uppercase">Live</span>
               </div>
             </div>
-            {/* Stats */}
             <div className="p-4 sm:p-6 intelligence-grid">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
                 {[
@@ -304,7 +315,6 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              {/* Sparkline */}
               <div className="rounded-sm border border-white/6 bg-background/60 p-4 h-28 flex flex-col gap-2">
                 <p className="text-[9px] text-muted-foreground/30 uppercase tracking-[0.14em]">Sentiment trend — last 7 days</p>
                 <div className="flex-1 flex items-end gap-1">
@@ -358,21 +368,9 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto w-full">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
             {[
-              {
-                icon: Eye,
-                title: "Omnipresent awareness",
-                desc: "AuraFlow sees what your team can't. Every thread, every comment, every signal — captured automatically.",
-              },
-              {
-                icon: Shield,
-                title: "Reputation defence",
-                desc: "Complaints and urgent mentions are separated from noise. Catch crises before they compound.",
-              },
-              {
-                icon: Radio,
-                title: "Silent. Always on.",
-                desc: "No manual effort. No missed signals. AuraFlow runs continuously in the background — your silent intelligence layer.",
-              },
+              { icon: Eye,    title: "Omnipresent awareness",  desc: "AuraFlow sees what your team can't. Every thread, every comment, every signal — captured automatically." },
+              { icon: Shield, title: "Reputation defence",     desc: "Complaints and urgent mentions are separated from noise. Catch crises before they compound." },
+              { icon: Radio,  title: "Silent. Always on.",     desc: "No manual effort. No missed signals. AuraFlow runs continuously in the background — your silent intelligence layer." },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex flex-col items-center text-center gap-3 p-6">
                 <Icon className="w-5 h-5 text-primary/60" />
@@ -402,7 +400,7 @@ export default function Landing() {
           <div className="pt-2">
             <Link href="/app">
               <span
-                className="inline-flex items-center gap-2.5 px-6 sm:px-8 py-3 sm:py-3.5 rounded-sm bg-primary text-primary-foreground text-sm font-semibold tracking-wide hover:bg-primary/90 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-sm bg-primary text-primary-foreground text-sm font-semibold tracking-wide hover:bg-primary/90 transition-all cursor-pointer"
                 style={{ boxShadow: "0 0 36px rgba(7,211,232,0.28)" }}
               >
                 Open AuraFlow Platform
@@ -414,12 +412,14 @@ export default function Landing() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/5 py-6 sm:py-8 px-4 sm:px-6">
+      <footer className="border-t border-white/5 py-6 sm:py-8 px-4 sm:px-6"
+        style={{ borderTopColor: "rgba(7,211,232,0.06)" }}
+      >
         <div className="max-w-6xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4">
           <img
             src={logoSrc}
             alt="AuraFlow"
-            className="h-5 w-auto object-contain opacity-35"
+            className="h-5 w-auto object-contain opacity-30"
           />
           <div className="flex items-center gap-2 text-[9px] text-muted-foreground/28 tracking-[0.12em] uppercase">
             <span className="relative flex h-1 w-1">

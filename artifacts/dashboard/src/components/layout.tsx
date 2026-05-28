@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { LayoutDashboard, MessageSquare, Tag, Bell, FileText, Radio } from "lucide-react";
 import { useListAlerts } from "@workspace/api-client-react";
-import logoSrc from "@/assets/auraflow-logo.png";
+import iconSrc from "@/assets/auraflow-icon.png";
 
 const navItems = [
   { href: "/app", label: "Dashboard", icon: LayoutDashboard },
@@ -40,17 +40,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen w-full bg-background">
       <Sidebar className="border-r border-sidebar-border bg-sidebar">
         <SidebarHeader className="px-4 py-4 border-b border-sidebar-border">
-          <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            {/* Icon-only mark */}
             <img
-              src={logoSrc}
+              src={iconSrc}
               alt="AuraFlow"
-              className="h-6 w-auto object-contain object-left"
+              className="h-9 w-auto object-contain"
+              style={{ filter: "drop-shadow(0 0 6px rgba(7,211,232,0.3))" }}
             />
-            <div className="flex items-center gap-1.5 pl-0.5">
-              <SignalDot />
-              <p className="text-[9px] text-primary/70 tracking-[0.14em] uppercase font-medium">
-                Monitoring active
-              </p>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[13px] font-semibold tracking-[0.06em] text-sidebar-foreground">
+                AuraFlow
+              </span>
+              <div className="flex items-center gap-1.5">
+                <SignalDot />
+                <span className="text-[9px] text-primary/70 tracking-[0.14em] uppercase font-medium">
+                  Active
+                </span>
+              </div>
             </div>
           </div>
         </SidebarHeader>
